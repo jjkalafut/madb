@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <title>MADB - ReadMe</title>
+
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/bootstrap.min.css')}}" />
+
+    <style>
+      .py-5 {
+        padding-bottom: 0px!important;
+      }
+      h2 {
+        margin-top: 40px;
+      }
+      ul.input, ul.output {
+        padding: 0px;
+      }
+      ul.input li, ul.output li {
+        width: 400px;
+        text-align: center;
+        margin: auto;
+        padding: 0px;
+        list-style-type: none;
+      }
+      .input {
+        color: green;
+      }
+      .output {
+        color: blue;
+      }
+    </style>
+
+  </head>
+  <body>
+
+    <nav class="navbar navbar-expand-md navbar-dark bg-dark mb-4">
+      <div class="container-fluid">
+        <a class="navbar-brand" href="#">Navigation</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarCollapse">
+          <ul class="navbar-nav me-auto mb-2 mb-md-0">
+            <li class="nav-item">
+              <a class="nav-link" href="Main_Page.html">Home</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="Overview.html">Project Overview</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="Tool.html">Tool</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="Bios.html">Team</a>
+            <li class="nav-item">
+              <a class="nav-link active" aria-current="page" href="How_It_Works.html">How it Works</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+<main class="container">
+
+  <div class="starter-template text-center py-5 px-3">
+    <h1>Step 1: Getting the Data</h1>
+    <p class="lead">
+      First, we need some network data (in netflow format) to analyze. We chose a week of the UGR-16 dataset to start.
+      It can be found <a href="https://nesg.ugr.es/nesg-ugr16/">here</a>. A week of data comes comressed, and unzips to ~60GB in size.
+    </p>
+  </div>
+
+  <div class="starter-template text-center py-5 px-3">
+    <h1>Step 2: Processing!</h1>
+
+    <h2>Run it All!</h2>
+      <p class="lead">
+        For simplicity, we've included a ready-to-view set of data. If you want to re-process UGR'16 (or try some of your own) we've created a script (run_and_process_data.py) that takes a single argument: the downloaded netflow csv.
+        The script has commands to automatically run all the following steps in this section. They're included below to detail and explain each step in more detail.
+        Once the following steps have been run and the data output, in can be vizualized as many times as desired with no need to re-process.
+      </p>
+
+    <h2>Slice it.</h2>
+      <p class="lead">
+        The first step in the data prep process is to slice it into workable chunks. The 'chunk_data.py' script goes through the given netflow file and
+        chops it into ~4GB (configurable) chunks.
+      </p>
+      <h3 class="input">Input</h3>
+      <ul class="input">
+        <li>netflow.csv</li>
+      </ul>
+      <h3 class="output">Output</h3>
+      <ul class="output">
+        <li>netflow_chunk_[1-n].csv</li>
+      </ul>
+
+    <h2>Preprocessing</h2>
+      <p class="lead">
+        Once we have chunks of data python can manage, we conver the data into a form the MIDAS algorithm can use. For different netflow layouts, this script
+        may have to be modified to correctly find the proper columns. If the data is labeled (for test datasets), it will output the names of different 'bad' netflows in the terminal,
+        and create a '.truth' file. Either way, it will output a few different files. The main file is the given chunk file plus '.processed'.
+        This file has three rows: timestep, source id, and destination id. The ids are integers that map to a unique ip address in the output .ipmap file.
+        Similarly, the .timemap file has a datetime for each unique timestep. A .shape file is created for MIDAS that jsut has the number of rows in the chunk.
+      </p>
+      <h3 class="input">Input</h3>
+      <ul class="input">
+        <li>netflow_chunk_x.csv</li>
+      </ul>
+      <h3 class="output">Output</h3>
+      <ul class="output">
+        <li>netflow_chunk_[1-n].csv.processed</li>
+        <li>netflow_chunk_[1-n].csv.ipmap</li>
+        <li>netflow_chunk_[1-n].csv.shape</li>
+        <li>netflow_chunk_[1-n].csv.timemap</li>
+        <li>netflow_chunk_[1-n].csv.truth</li>
+      </ul>
+
+    <h2>Running MIDAS</h2>
+      <p class="lead">
+        Now we're ready to leverage the amazing MIDAS algorithm. MIDAS is somethign we use in our process, but we had no part in creating it.
+        For more info, you can see the <a href="https://arxiv.org/pdf/2009.08452.pdf">paper</a> and <a href="https://github.com/Stream-AD/MIDAS">github</a>. We made some modifications to it for our needs, and that
+        github is <a href="https://github.gatech.edu/jkalafut3/MIDAS_NETWORK">here</a>.
+      </p>
+      <h3 class="input">Input</h3>
+      <ul class="input">
+        <li>netflow_chunk_[1-n].csv.processed</li>
+        <li>netflow_chunk_[1-n].csv.shape</li>
+      </ul>
+      <h3 class="output">Output</h3>
+      <ul class="output">
+        <li>netflow_chunk_[1-n].csv.score</li>
+      </ul>
+
+    <h2>Gaussian Mixture Model (GMM)</h2>
+      <p class="lead">
+        The output of MIDAS is a list of integers, basically ranking most suspicious to least (higher is suspicious). We need to convert that into something we can easily
+        colorize for our vizualation. Better yet, GMM can help narrow the exact data point MIDAS scores swap from safe to suspicious. We fit the GMM on differing amounts of the
+        .processed file, and use it to create a customizable number of 'time steps'. This allows our graphic to 'slide' over time for the processed chunk of data. It gives
+        a user the sense of what's happening in the temporal demension of the data. The GMM also checks the .processed file, to know where to break the data for time sections.
+      </p>
+      <h3 class="input">Input</h3>
+      <ul class="input">
+        <li>netflow_chunk_[1-n].csv.score</li>
+        <li>netflow_chunk_[1-n].csv.processed</li>
+        <li>netflow_chunk_[1-n].csv.timemap</li>
+      </ul>
+      <h3 class="output">Output</h3>
+      <ul class="output">
+        <li>netflow_chunk_[1-n].csv.gmm</li>
+      </ul>
+
+      <h2>Postprocessing</h2>
+        <p class="lead">
+          Now that we have a clean set of data with easy-to-parse scores, we can do some post-processing and filter out exactly which parts we want to vizualize. Since our
+          chose dataset is so large, we're filtering on only 'internal' ips. This subnet can be customized in the postprocess.py script. The script outputs two json files;
+          one for nodes and one fore edges. They're split into timesteps first, then a map of nodes or a list of edges, respectively. The scipt also takes in a user-provided
+          .risk file here. This allows a user to provide a list of ( [string ip], [ 0.0-1.0 risk] ) values to take into consideration before vizualizing. This is meant to be a way
+          for a user to indicate they care more about a certain device or feel certain devices are less secure. A 0.0 risk indicates a user feels that a device it secure or unimportant
+          while a 1.0 would indicate that a user needs a device to be very secure or thinks it may be infected. The overal weight of the user provided risk can be adjusted in
+          the script.
+        </p>
+        <h3 class="input">Input</h3>
+        <ul class="input">
+          <li>netflow_chunk_[1-n].csv.gmm</li>
+          <li>netflow_chunk_[1-n].csv.processed</li>
+          <li>netflow_chunk_[1-n].csv.ipmap</li>
+          <li>netflow_chunk_[1-n].csv.timemap</li>
+          <li>netflow_chunk_[1-n].csv.risk</li>
+        </ul>
+        <h3 class="output">Output</h3>
+        <ul class="output">
+          <li>netflow_chunk_[1-n].csv.edges_processed</li>
+          <li>netflow_chunk_[1-n].csv.nodes_processed</li>
+        </ul>
+  </div>
+
+  <div class="starter-template text-center py-5 px-3">
+    <h1>Step 3: Viz This!</h1>
+    <p class="lead">
+      If you're using our provided data ( or already processed some yourself ) you're now ready to vizualize. Our flask_and_display.py script will launch a python flask server
+      and launch your webpgae locally. Your browser should open to 127.0.0.1:5000/ and from there you can see the vizualized network. A time slider will allow you to move back
+      and forth between different areas of the given chunk. Hovering a node will give more detailed information.
+    </p>
+
+  </div>
+  </br>
+  </br>
+  </br>
+
+</main>
+
+<footer class="container">
+  <p class="float-end"><a href="#">Back to top</a></p>
+  Made by John, Jerry, Michael, Priscilla, Dina and Ben
+  <br>
+  Georgia Institute of Technology - CSE6424 - Spring 2021
+</footer>
+
+</body>
+</html>

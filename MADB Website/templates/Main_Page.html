@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <title>MADB - Main Page</title>
+
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/bootstrap.min.css')}}" />
+
+    <style>
+      .bd-placeholder-img {
+        font-size: 1.125rem;
+        text-anchor: middle;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        user-select: none;
+      }
+
+      @media (min-width: 768px) {
+        .bd-placeholder-img-lg {
+          font-size: 3.5rem;
+        }
+      }
+    </style>
+
+
+    <!-- Custom styles for this template -->
+    <link href="navbar-top.css" rel="stylesheet">
+  </head>
+  <body>
+
+<nav class="navbar navbar-expand-md navbar-dark bg-dark mb-4">
+  <div class="container-fluid">
+    <a class="navbar-brand" href="#">Navigation</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarCollapse">
+      <ul class="navbar-nav me-auto mb-2 mb-md-0">
+        <li class="nav-item">
+          <a class="nav-link active" aria-current="page" href="Main_Page.html">Home</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="Overview.html">Project Overview</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="Tool.html">Tool</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="Bios.html">Team</a>
+        <li class="nav-item">
+          <a class="nav-link" href="How_It_Works.html">How It Works</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<main class="container">
+    <div class="container py-4">
+        <header class="pb-3 mb-4 border-bottom">
+          <a href="/" class="d-flex align-items-center text-dark text-decoration-none">
+            <img src="static/pictures/MADB.png" alt="Very Angry Little Bee" style="width:40px;height:32px;">
+            <span class="fs-1">Malicious Activity Detection Bulletin (MADB)</span>
+          </a>
+        </header>
+
+        <div class="p-5 mb-4 bg-light rounded-3">
+          <div class="container-fluid py-5">
+            <h1 class="display-5 fw-bold">MADB Analysis and Visualization Tool</h1>
+            <p class="col-md-8 fs-4">Visualize and identify malicious network activity using predictive analytics.</p>
+            <div class="MB-5">
+              <a class="btn btn-primary" href="Tool.html" role="button">Go</a>
+            </div>
+          </div>
+        </div>
+
+        <div class="row align-items-md-stretch">
+          <div class="col-md-6">
+            <div class="h-100 p-5 text-white bg-info rounded-3">
+              <h2>Project Overview</h2>
+              <p>Learn about our project's background, methodology, dataset and conclusions.</p>
+              <div class="MB-5">
+                <a class="btn btn-outline-light" href="Overview.html" role="button">Go</a>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="h-100 p-5 text-light bg-dark border rounded-3">
+              <h2>Meet The Team</h2>
+              <p>Learn more about who did what to make MADB a success!</p>
+              <div class="MB-5">
+                <a class="btn btn-outline-secondary" href="Bios.html" role="button">Go</a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <footer class="pt-3 mt-4 text-muted border-top">
+          Made by John, Jerry, Michael, Priscilla, Dina and Ben
+          <br>
+          Georgia Institute of Technology - CSE6424 - Spring 2021
+        </footer>
+</main>
+
+  </body>
+</html>

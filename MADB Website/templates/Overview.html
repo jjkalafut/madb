@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <link rel="icon" href="static/pictures/MADB.png">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <title>MADB - Overview</title>
+
+    <!-- Bootstrap core CSS -->
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/bootstrap.min.css')}}" />
+
+<meta name="theme-color" content="#7952b3">
+
+    <style>
+      .bd-placeholder-img {
+        font-size: 1.125rem;
+        text-anchor: middle;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        user-select: none;
+      }
+
+      @media (min-width: 768px) {
+        .bd-placeholder-img-lg {
+          font-size: 3.5rem;
+        }
+      }
+    </style>
+
+  </head>
+  <body>
+
+<nav class="navbar navbar-expand-md navbar-dark bg-dark mb-4">
+  <div class="container-fluid">
+    <a class="navbar-brand" href="#">Navigation</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarCollapse">
+      <ul class="navbar-nav me-auto mb-2 mb-md-0">
+        <li class="nav-item">
+          <a class="nav-link" href="Main_Page.html">Home</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link active" aria-current="page" href="Overview.html">Project Overview</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="Tool.html">Tool</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="Bios.html">Team</a>
+        <li class="nav-item">
+          <a class="nav-link" href="How_It_Works.html">How It Works</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<div class="px-4 py-5 my-5 text-center">
+  <img class="d-block mx-auto mb-4" src="static/pictures/ov1.png" alt="">
+  <h1 class="display-5 fw-bold">Summary</h1>
+  <div class="col-lg-9 mx-auto">
+    <p class="lead mb-5">Don’t you wish you could identify bad actor or malicious activity before it
+      hits your network? MADB or the Malicious Activity Detection Bulletin is a
+
+      dynamic graph anomaly detection analysis and visualization tech-
+      nique that can be used to alert users to potentially malicious or unusual
+
+      network activity. The program can accept your input and highlight po-
+      tential “bad actors” or areas of risk within your network while provid-
+      ing you with key details about your current network
+      <br>
+      <br>
+      Cyber attacks have cost the global economy over $1 Trillion USD in 2020.
+      Most cybercrime ultimately involves retrieving or encrypting a user’s
+      data. Malware, malicious software designed to infiltrate a device and/or
+      network, is a key element, and most notably, it’s also used to distribute
+
+      ransomware. Hospitals, Schools, Companies - they’ve all fallen victim to ei-
+      ther losing their data or paying a hefty fee.
+
+      Our solution focuses on helping users identify risker activity on their
+      network, to help mitigate the risk of a potential attack.
+      </p>
+    </div>
+
+<h1 class="display-5 fw-bold">Our Approach</h1>
+    <p class="lead mb-4">Our solution leverages the MIDAS algorithm which is derived from a Chi-
+      square goodness-of-fit test between the graph’s new structure brought in by the new incoming edges and the expected structure based on its cur-
+      rent structure at a certain timestep. Here is the generalized formula:
+      <br>
+      <p class="lead mb-4">
+    </p>
+    <img class="d-block mx-auto mb-4" src="static/pictures/midas.jpeg" alt="">
+    <p class="lead mb-4">We created thresholds for “abnormal” network traffic using a combina-
+      tion of the output from the MIDAS algorithm with the principals from the
+      Gaussian mixture model (GMM). Using this method, we were able to es-
+      tablish a ROC-AUC score of 91.52% when identifying DoS, Scan11,and Scan44 attacks.
+      Finally we allowed for a user to provide input on the total node risk
+      scoring (TNS) by taking a weighted average between the algorithm output
+      and the user input (with a default weighting of 60-40%, respectively). The
+      Final Scoring is as follows:<br><br>
+
+      TNS= (Algorithm Score* Weighting ) + (User Score* Weighting)
+      <p class="lead mb-4">
+    </p>
+
+<div class="b-example-divider"></div>
+
+<div class="container col-xxl-8 px-4 py-5">
+  <div class="row flex-lg-row-reverse align-items-center g-5 py-5">
+    <div class="col-10 col-sm-8 col-lg-6">
+      <img src="static/pictures/clipboard-data.svg" class="d-block mx-lg-auto img-fluid" alt="Bootstrap Themes" width="400" height="400" loading="lazy">
+    </div>
+    <div class="col-lg-6">
+      <h1 class="display-5 fw-bold lh-1 mb-3">Data Set</h1>
+      <p class="lead">We used the "UGR 16" data set for our analysis. This data set was developed by cybersecurity researchers to represent four months worth of network traffic.
+        The "UGR 16" data set is approximately 50 GB and includes over external 600 million IP addresses, some of which are malware events.
+        Given the scale and complexity of the "UGR 16" data set, substantial pre-processing was required to wrangle the data for further classification and analysis to identify malicious traffic.<br>
+      </p>
+    </div>
+
+<div class="b-example-divider"></div>
+
+<h1 class="display-5 fw-bold">Our Experiments and Approach</h1>
+    <p class="lead mb-4">Attack Timing<br>
+      Because our data included both normal and abnormal network data, volume of activity was not an accurate
+      measure for “unusual” activity. We saw this when we looked at the edge and node distribution, so we made
+      sure to run scoring across all timestamps for a particular “chunk” of data.
+      <p class="lead mb-4">
+    </p>
+    <img class="d-block mx-auto mb-4" src="static/pictures/analysis1.jpeg" alt=""style="width:500px;height:400px">
+    <img class="d-block mx-auto mb-4" src="static/pictures/analysis2.jpeg" alt="" style="width:500px;height:400px">
+    <p class="lead mb-4">We tuned the MIDAS scoring algorithm over a number of “chunks” of data, for each we had to consider:
+      • NormalCore: Basic MIDAS algorithm performed on each incoming edge<br>
+      • RelationalCore: MIDAS algorithm performed on each incoming edge and the nodes related to it incorporating spatial and
+      temporal relations<br>
+      • FilteringCore: RelationalCore that allowed for a selection of a threshold to limit which new edges are allowed to affect suv
+      based on their scores<br><br>
+      In the end we decided on using the Relational Core with a 0.75 temporal factor and sum aggregation <br>
+      We used GMM as a way to help establish thresholds for the color-coding portion of our solution, . We had to review the
+
+      GMM model and learned that it is better able to model MIDAS’ scoring over larger periods of time. This resulted in our post-
+      processing procedures having to run GMM overall all timestamps to get the best possible threshold. We also learned that
+
+      MIDAS periodically misclassified certain anomalous behavior, GMM pushed these instances to the lower left during its model-
+      ing, resulting in a need for manual adjustment to the thresholds. <br><br>
+    <img class="d-block mx-auto mb-4" src="static/pictures/analysis3.jpeg" alt="" >
+    <img class="d-block mx-auto mb-4" src="static/pictures/analysis4.jpeg" alt="" >
+      <p class="lead mb-4">
+    </p>
+
+    <h1 class="display-5 fw-bold">Post Processing and Final Analysis</h1>
+    <p class="lead mb-4">Once edge probabilities were calculated for each time period, we allocate the scoring of “risk” to
+      participant nodes along with optional user-specified risk. The final node risk scores are calculated
+      using the following algorithm:
+      <p class="lead mb-4">
+    </p>
+    <img class="d-block mx-auto mb-4" src="static/pictures/finaleq.png" alt="" style="width:150px;height:40px;">
+    <p class="lead mb-4">Where the probability P(a)t of a node a at timestep t being anomalous is calculated as:<br>
+      • the parameterized weights for the GMM-fitted MIDAS calculation (wm) set at 60% by default<br>
+      • optional user-defined (wu) risk scores set at 40% by default<br>
+      These values are then distributed to the mean probability Pmt of all edges to which node a is a participant
+      <p class="lead mb-4"><br>
+    </p>
+
+<div class="container my-5">
+  <div class="row p-4 pb-0 pe-lg-0 pt-lg-5 align-items-center rounded-3 border shadow-lg">
+    <div class="col-lg-7 p-3 p-lg-5 pt-lg-3">
+      <h1 class="display-4 fw-bold lh-1">Conclusions/Key Takeaways</h1>
+      <p class="lead">We developed a network graph visualization to depict device traffic (by IP address) for each time "chunk" specified during data processing.
+        The visualization is interactive and lets users toggle between time "chunks" to evaluate and understand the position of cyber threats. High risk devices are shown as large, red circles in relation to the other nodes.
+        High network traffic volume is shown through comparatively thicker connection weights. Navigate to the "Tool" section of the website to try MADB for yourself!
+      </p>
+    </div>
+    <div class="col-lg-4 offset-lg-1 p-0 position-relative overflow-hidden shadow-lg">
+      <div class="position-lg-absolute top-0 left-0 overflow-hidden">
+        <img class="d-block rounded-lg-3" src="bootstrap-docs.png" alt="" width="1000">
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer class="container">
+  <p class="float-end"><a href="#">Back to top</a></p>
+  Made by John, Jerry, Michael, Priscella, Dina and Ben
+  <br>
+  Georgia Institute of Technology - CSE6424 - Spring 2021
+</footer>
+
+  </body>
+</html>

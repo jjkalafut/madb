@@ -1,0 +1,484 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <link rel="icon" href="static/pictures/MADB.png">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <title>MADB - Tool</title>
+    <script src="https://d3js.org/d3.v5.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3-tip/0.7.1/d3-tip.min.js"></script>
+    <script src="https://unpkg.com/d3-simple-slider"></script>
+    <style>
+
+    .d3-tip {
+      line-height: 1;
+      font-weight: bold;
+      padding: 12px;
+      background: rgba(0, 0, 0, 0.8);
+      color: #fff;
+      border-radius: 5px;
+      font-family: Arial;
+    }
+
+    path.link {
+      fill: none;
+      stroke: #666;
+      stroke-width: 1.5px;
+    }
+
+    circle {
+      fill: white;
+      stroke: #fff;
+      stroke: black;
+      stroke-width: 1.5px;
+    }
+
+    .d3-tip img {
+      width: 45px;
+      height: 45px;
+      margin-bottom: -20px;
+    }
+
+    text {
+      fill: #000;
+      font: 16px sans-serif;
+      font-weight: 800;
+    }
+
+    rect {
+      fill: skyblue;
+      border: black;
+    }
+
+    div#slider, div#table_div, div#viz, h1, h2{
+      text-align: center;
+    }
+
+    table{
+      width: 100%;
+    }
+
+    tr{
+      border-bottom: 1px black solid;
+    }
+
+    </style>
+
+    <!-- Bootstrap core CSS -->
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/bootstrap.min.css')}}" />
+
+    <style>
+      .bd-placeholder-img {
+        font-size: 1.125rem;
+        text-anchor: middle;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        user-select: none;
+      }
+
+      @media (min-width: 768px) {
+        .bd-placeholder-img-lg {
+          font-size: 3.5rem;
+        }
+      }
+    </style>
+
+  </head>
+  <body>
+
+    <nav class="navbar navbar-expand-md navbar-dark bg-dark mb-4">
+      <div class="container-fluid">
+        <a class="navbar-brand" href="#">Navigation</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarCollapse">
+          <ul class="navbar-nav me-auto mb-2 mb-md-0">
+            <li class="nav-item">
+              <a class="nav-link" href="Main_Page.html">Home</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="Overview.html">Project Overview</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link active" aria-current="page"href="Tool.html">Tool</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link"  href="Bios.html">Team</a>
+            <li class="nav-item">
+              <a class="nav-link" href="How_It_Works.html">How It Works</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+    <h1 id="title">MADB vizualization</h1>
+    <p id="value"></p>
+    <script>
+
+      width = 650;
+      height = 500;
+      max_weight = 1;
+      force = null;
+      //console.log('adding svg');
+      svg = d3.select("body")
+              .append("div")
+              .attr("id", "viz")
+              .append("svg")
+              .attr("width", width)
+              .attr("height", height);
+
+      // Initialize slider for modification once program imports data
+      var slider = d3.sliderHorizontal()
+        .width(400)
+        .step(1)
+        .displayValue(false);
+
+      d3.select("body").append("div")
+        .attr('id', 'slider')
+        .append('svg')
+        .attr('width', .01)
+        .attr('height', .01)
+        .append('g')
+        .attr('transform', 'translate(30,30)')
+        .call(slider);
+
+        //Import data from pre-processing script
+        Promise.all([d3.json("{{ url_for('static', filename='data/nodes.json')}}"),d3.json("{{ url_for('static', filename='data/edges.json')}}")]).then(function(values){
+
+          node_details = values[0]
+          edges = values[1]
+          edges_for_viz = []
+
+          //console.log( node_details )
+          //console.log( edges )
+
+          edges[1].forEach( function( edge ){
+            edges_for_viz.push({ source: edge[0], target: edge[1], weight:edge[2]});
+          });
+
+          max_time = 1
+          for (const index in node_details){
+              if (node_details[index]['index'] > max_time) {
+                  max_time = node_details[index]['index']
+                }
+            }
+
+          //Create slider
+          slider.ticks(max_time)
+            .value(1)
+            .min(1)
+            .max(max_time)
+            .on('onchange', (val) => {
+              svg.selectAll("*").remove();
+              starter(time = val);
+            });
+
+          d3.select('#slider')
+            .append('svg')
+            .attr('width', 500)
+            .attr('height', 100)
+            .append('g')
+            .attr('transform', 'translate(30,30)')
+            .call(slider);
+
+          d3.select('#slider')
+            .append('p')
+            .attr( 'id', 'timestamp')
+
+          starter(1)
+
+          //Create function that initializes a graph using data filtered for a specified timestamp
+          function starter(time){
+            filtered_data = filter_data(edges,node_details,time)
+            nodes_filt = filtered_data[0]
+            edges_filt = filtered_data[1]
+
+            try{
+              force.stop();
+            } catch( err ){}
+
+            set_time_indicator( node_details[time]['timestamp'] )
+            create_graph(edges_filt,nodes_filt)
+            create_table( node_details[time]['nodes'] );
+            }
+          });
+
+          function filter_data(edges, node_details, time_step){
+
+            nodes = node_details[ time_step ][ 'nodes' ];
+            good_nodes = {};
+            scores = [];
+            cutoff_score = -1;
+            num_nodes_shown = 200;
+
+            if ( Object.entries( nodes ).length > num_nodes_shown ){
+              for (const [ key, value ] of Object.entries( nodes ) ) {
+                scores.push( value[ 'total_score' ] )
+              }
+
+              scores = scores.sort( ( e1, e2) => {
+                if( e1 > e2 ){
+                  return -1
+                }
+                else if( e1 === e2 ){
+                   return 0;
+                }
+                return 1;
+              });
+
+              cutoff_score = scores[ num_nodes_shown ];
+            }
+
+            for (const [ key, value ] of Object.entries( nodes ) ) {
+              if( value[ 'total_score' ] > cutoff_score ){
+                value[ 'id' ] = parseInt( key );
+                good_nodes[ key ] = value;
+              }
+            }
+
+            edges_filtered = edges[time_step];
+            edges_formatted = [];
+
+            for (var i = 0; i < edges_filtered.length; i++) {
+              var key = parseInt( edges_filtered[i][0] );
+              var key2 = parseInt( edges_filtered[i][1] );
+              if ( typeof good_nodes[key2] !== 'undefined' && typeof good_nodes[key] !== 'undefined' ) {
+                temp_edge = {source: key, target: key2, weight: parseInt(edges_filtered[i][2])}
+
+                edges_formatted.push(temp_edge)
+                if (temp_edge["weight"] > max_weight){
+                  max_weight = temp_edge["weight"];
+                }
+              }
+            }
+
+            return [good_nodes, edges_formatted]
+          };
+
+          function create_graph(edges, nodes){
+
+            // Set parameters to run simulation and freeze after a certain time elapses
+            simulationDurationInMs = 5000; // 5 seconds
+            let startTime = Date.now();
+            let endTime = startTime + simulationDurationInMs;
+
+            // Create Simulation
+            var link_force =  d3.forceLink(edges)
+              .id(function(d) { return d.id; });
+
+            force = d3.forceSimulation()
+              .nodes(d3.values(nodes))
+              .force("link", link_force)
+              .force('center', d3.forceCenter((width / 2) + 50, (height / 2)))
+              .force("x", d3.forceX())
+              .force("y", d3.forceY())
+              .force("charge", d3.forceManyBody().strength(-20))
+              .alphaTarget(1)
+              .on("tick", tick);
+
+            // Create Scales
+            var colorScale = d3.scaleLinear().domain([0.0,.5,1.0]).range(["blue","grey","red"])
+            var sizeScale = d3.scaleLinear().domain([0,1]).range([3,10])
+            var edgeScale = d3.scaleLinear().domain([1,max_weight]).range([1,5])
+
+            // Create Legend
+            svg.append("rect")
+              .attr("x",10)
+              .attr("y",10)
+              .style("fill", "blue")
+              .attr("width", 20)
+              .attr("height", 18);
+
+            svg.append("rect")
+              .attr("x",10)
+              .attr("y",40)
+              .style("fill", "grey")
+              .attr("width", 20)
+              .attr("height", 18);
+
+            svg.append("rect")
+              .attr("x",10)
+              .attr("y",70)
+              .style("fill", "red")
+              .attr("width", 20)
+              .attr("height", 18);
+
+
+            svg.append("text")
+              .attr("x", 35)
+              .attr("y", 20)
+              .text("Low Risk")
+              .attr("alignment-baseline"  ,"middle")
+
+            svg.append("text")
+              .attr("x", 35)
+              .attr("y", 50)
+              .text("Medium Risk")
+              .attr("alignment-baseline"  ,"middle")
+
+            svg.append("text")
+              .attr("x", 35)
+              .attr("y", 80)
+              .text("High Risk")
+              .attr("alignment-baseline"  ,"middle")
+
+            // Create Tooltip
+            var tip = d3.tip()
+              .attr('class', 'd3-tip')
+              .html(function(d) {
+                var ip = d['ip'];
+                var risk = d['total_score'];
+                var node_num = d.id
+                var bee_icon = ""
+
+                if( risk > .75 ){
+                  bee_icon = "<img src=\"static/pictures/bee.png\" loading=\"lazy\" >"
+                }
+
+                return "<strong>IP Address:</strong> " + ip + bee_icon + "</br>" +
+                "<strong>Node #:</strong> " + node_num + "</br>" +
+                "<strong>Risk:</strong> " + ( "" + ( risk * 100 ) ).substring( 0, 6 ) + "%</br>"; //This is total score but I'm calling it the "risk score" for our Viz
+            });
+            svg.call(tip)
+
+            // Add the edges
+            var path = svg.append("g")
+              .selectAll("path")
+              .data(edges)
+              .enter()
+              .append("path")
+              .attr("class", function(d) { return "link " + d.type; })
+              .style("stroke-width", function(d){
+                return edgeScale(d["weight"])
+              })
+              .style("stroke", "black");
+
+            // Define the nodes
+            var node = svg.selectAll(".node")
+              .data(force.nodes())
+              .enter().append("g")
+              .attr("class", "node")
+              .on('mouseover', tip.show)
+              .on('mouseout', tip.hide);
+
+            // Add nodes
+            node.append("circle")
+              .attr("r", function(d)  {
+                if (d["external"]){
+                  return 3
+                }  else {
+                  return sizeScale(d['total_score'])
+                }
+              })
+              .style("fill", function(d) {
+                if (d["external"]){
+                  return null
+                }  else {
+                return colorScale(d['total_score'])
+                }
+              });
+
+            // Define simulation parameters
+            function tick() {
+              if (Date.now() < endTime) {
+
+                path.attr("d", function(d) {
+                  var dx = d.target.x - d.source.x,
+                      dy = d.target.y - d.source.y,
+                      dr = 0;
+                  return "M" +
+                      d.source.x + "," +
+                      d.source.y + "A" +
+                      dr + "," + dr + " 0 0,1 " +
+                      d.target.x + "," +
+                      d.target.y;
+                });
+
+                node.attr("transform", function(d) {
+                    return "translate(" + d.x + "," + d.y + ")";
+                });
+
+              } else {
+                  force.stop();
+              }
+            };
+          }
+
+          function set_time_indicator( time_string ){
+            d3.select('#timestamp')
+            .text( 'Data Timestamp: ' + time_string.replace('T', ' ') )
+          }
+
+          function create_table( nodes ){
+            //delete old table if exists
+            try{
+              document.getElementsByTagName("h2")[0].remove();
+              document.getElementsByTagName("table")[0].remove();
+            } catch( err ){}
+
+            var body = document.getElementsByTagName("body")[0];
+
+            var table = document.createElement("table");
+            var tbody = document.createElement("tbody");
+            var thead = table.createTHead();
+
+
+            headers = [ "ip", "max_gmm", "gmm_score", "risk_score",  "total_score" ];
+            trow = thead.insertRow();
+            for( const h of headers ){
+              var th = document.createElement("th");
+              var text = document.createTextNode( h );
+              th.appendChild(text);
+              trow.appendChild(th);
+            }
+
+            // create rows
+            for (const [ key, value ] of Object.entries( nodes ) ) {
+
+              var row = document.createElement("tr");
+
+              //cells
+              for( const h of headers ){
+                var data = document.createElement("td");
+                if( value[ h ] < 1.1 ){
+                  var text = document.createTextNode( ( "" + ( value[h] * 100 ) ).substring( 0, 6 ) );
+                } else {
+                  var text = document.createTextNode(""+ value[h]);
+                }
+
+                data.appendChild(text);
+                row.appendChild(data);
+              }
+              //row added to end of table body
+              tbody.appendChild(row);
+            }
+
+            table.appendChild(tbody);
+
+            var h2 = document.createElement("h2");
+            h2.id = "table_title";
+            h2.innerText = "Full Node Details (Ctl + f to search)"
+            body.appendChild(h2);
+
+            var div = document.createElement("div");
+            div.id = "table_div";
+            div.appendChild(table);
+            body.appendChild(div);
+            footer = document.getElementsByTagName("footer")[0];
+            footer.remove();
+            body.appendChild(footer);
+          }
+
+    </script>
+
+<footer class="container">
+  <p class="float-end"><a href="#">Back to top</a></p>
+  Made by John, Jerry, Michael, Priscilla, Dina and Ben
+  <br>
+  Georgia Institute of Technology - CSE6424 - Spring 2021
+</footer>
+
+  </body>
+</html>
